@@ -22,15 +22,20 @@ else()
 	set (CFLAGS_COMMON "${CFLAGS_COMMON} ${CFLAGS_OPT}")
 endif()
 
-pkg_check_modules(DEVMAPPER devmapper)
-pkg_check_modules(UUID uuid)
+if (NOT APPLE)
+	pkg_check_modules(DEVMAPPER devmapper)
+endif()
+
+if (NOT APPLE)
+ pkg_check_modules(UUID uuid)
+endif()
 find_library(GCRYPT_LIB gcrypt)
 
-if (NOT DEVMAPPER_FOUND)
+if (NOT DEVMAPPER_FOUND AND NOT APPLE)
 	message(FATAL_ERROR "Could not find the devmapper library")
 endif()
 
-if (NOT UUID_FOUND)
+if (NOT UUID_FOUND AND NOT APPLE)
 	message(FATAL_ERROR "Could not find the uuid library")
 endif()
 
@@ -46,7 +51,7 @@ set (CMAKE_REQUIRED_LIBRARIES gpg-error)
 check_library_exists(gcrypt gcry_kdf_derive "" HAVE_GCRYPT_PBKDF)
 set (CMAKE_REQUIRED_LIBRARIES "")
 
-if (HAVE_GCRYPT_PBKDF)
+if (HAVE_GCRYPT_PBKDF OR APPLE)
 	set (SRCS_PBKDF pbkdf2-gcrypt.c)
 	set (LDFLAGS_PBKDF "")
 	set (CFLAGS_PBKDF  "")
@@ -150,4 +155,3 @@ include(CPack)
 cpack_add_component(bin DISPLAY_NAME bin REQUIRED INSTALL_TYPES all)
 cpack_add_component(lib DISPLAY_NAME lib REQUIRED INSTALL_TYPES all)
 cpack_add_component(lib-dev DISPLAY_NAME lib-dev REQUIRED INSTALL_TYPES all DEPENDS lib)
-
