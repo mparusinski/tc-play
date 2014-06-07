@@ -23,11 +23,11 @@ else()
 endif()
 
 if (NOT APPLE)
-	pkg_check_modules(DEVMAPPER devmapper)
+  pkg_check_modules(DEVMAPPER devmapper)
 endif()
 
 if (NOT APPLE)
- pkg_check_modules(UUID uuid)
+  pkg_check_modules(UUID uuid)
 endif()
 find_library(GCRYPT_LIB gcrypt)
 
