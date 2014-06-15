@@ -133,7 +133,18 @@ tcplay is now available for both DragonFly BSD and Linux. It is a core part of
 the DragonFly BSD operating system and is available in a number of linux
 distros.
 
+OS X Support
+---------- 
 
+In this Git repository is currently undergoing work to provide support for
+OS X. At the moment there is a way to generate using cmake an XCode project
+for tc-play however at the moment nothing else compiles. To create an XCode
+project you need to first download the following libraries:
+
+https://www.dropbox.com/sh/5kec2t3hfludsv5/AABQAujKty5SW2CdXnC6OA7Da/libgcrypt.framework
+https://www.dropbox.com/sh/5kec2t3hfludsv5/AACi6oaC9NRfBg2V7y8Zhg5wa/libgpg-error.framework
+
+add them to /Library/Frameworks and then run cmake.
 
 Licensing
 ==========
