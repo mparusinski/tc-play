@@ -33,6 +33,8 @@
 #include <sys/endian.h>
 #elif defined(__linux__)
 #include <endian.h>
+#elif defined(__APPLE__)
+#include <libkern/OSByteOrder.h>
 #endif
 #include <errno.h>
 #include <stdio.h>
@@ -44,10 +46,17 @@
 #include "tcplay.h"
 
 /* Endianess macros */
+#ifndef __APPLE__
 #define BE_TO_HOST(n, v) v = be ## n ## toh(v)
 #define LE_TO_HOST(n, v) v = le ## n ## toh(v)
 #define HOST_TO_BE(n, v) v = htobe ## n (v)
 #define HOST_TO_LE(n, v) v = htole ## n (v)
+#else
+#define BE_TO_HOST(n, v) v = OSSwapBigToHostInt ## n(v)
+#define LE_TO_HOST(n, v) v = OSSwapLittleToHostInt ## n(v)
+#define HOST_TO_BE(n, v) v = OSSwapHostToBigInt ## n(v)
+#define HOST_TO_LE(n, v) v = OSSwapHostToLittleInt ## n(v)
+#endif
 
 struct tchdr_dec *
 decrypt_hdr(struct tchdr_enc *ehdr, struct tc_cipher_chain *cipher_chain,

@@ -35,7 +35,11 @@
  * for more details...
  */
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#if defined(__APPLE__)
+#include <gcrypt/gcrypt.h>
+#else
 #include <gcrypt.h>
+#endif
 #pragma GCC diagnostic warning "-Wdeprecated-declarations"
 
 #include "tcplay.h"

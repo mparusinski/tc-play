@@ -1320,6 +1320,7 @@ out:
 	return ret;
 }
 
+#ifndef __APPLE__
 static
 int
 dm_get_info(const char *name, struct dm_info *dmi)
@@ -1347,6 +1348,15 @@ out:
 
 	return error;
 }
+#else // PLACE HOLDER FOR APPLE
+static
+int
+dm_get_info(const char *name, struct dm_info *dmi)
+{
+    return 0;
+}
+#endif
+
 
 #if defined(__DragonFly__)
 static
@@ -1422,6 +1432,7 @@ xlate_maj_min(const char *start_path, int max_depth, char *buf, size_t bufsz,
 }
 #endif
 
+#ifndef __APPLE__
 static
 struct tcplay_dm_table *
 dm_get_table(const char *name)
@@ -1528,7 +1539,15 @@ error:
 
 	return NULL;
 }
+#else // PLACEHOLDER FOR APPLE
+static
+struct tcplay_dm_table *
+dm_get_table(const char *name) {
+    return NULL;
+}
+#endif
 
+#ifndef __APPLE__
 struct tcplay_info *
 dm_info_map(const char *map_name)
 {
@@ -1621,7 +1640,15 @@ error:
 
 	return NULL;
 }
+#else // PLACE HOLDER FOR APPLE
+struct tcplay_info *
+dm_info_map(const char *map_name)
+{
+    return NULL;
+}
+#endif
 
+#ifndef __APPLE__
 static
 int
 dm_exists_device(const char *name)
@@ -1637,7 +1664,16 @@ dm_exists_device(const char *name)
 out:
 	return exists;
 }
+#else // PLACEHOLDER FOR APPLE
+static
+int
+dm_exists_device(const char *name)
+{
+    return 0;
+}
+#endif
 
+#ifndef __APPLE__
 static
 int
 dm_remove_device(const char *name)
@@ -1661,7 +1697,16 @@ out:
 
 	return ret;
 }
+#else
+static
+int
+dm_remove_device(const char *name)
+{
+    return 0;
+}
+#endif
 
+#ifndef __APPLE__
 int
 dm_setup(const char *mapname, struct tcplay_info *info)
 {
@@ -1886,7 +1931,15 @@ out:
 
 	return ret;
 }
+#else // PLACEHOLDER FOR APPLE
+int
+dm_setup(const char *mapname, struct tcplay_info *info)
+{
+    return 0;
+}
+#endif
 
+#ifndef __APPLE__
 int
 dm_teardown(const char *mapname, const char *device __unused)
 {
@@ -1911,6 +1964,13 @@ dm_teardown(const char *mapname, const char *device __unused)
 
 	return 0;
 }
+#else // PLACEHOLDER FOR APPLE
+int
+dm_teardown(const char *mapname, const char *device __unused)
+{
+    return 0;
+}
+#endif
 
 struct tc_crypto_algo *
 check_cipher(const char *cipher, int quiet)

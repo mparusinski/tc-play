@@ -78,11 +78,19 @@
 
 #include <limits.h>
 #include <inttypes.h>
+#include <time.h>
 
 #if defined(__DragonFly__)
 #include <uuid.h>
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
 #include <uuid/uuid.h>
+#endif
+
+#if defined(__APPLE__)
+#include <sys/types.h>
+struct dm_info {
+	void * void_pointer;
+};
 #endif
 
 
@@ -340,6 +348,8 @@ extern int tc_internal_state;
 #define free_safe_mem(x) \
 	_free_safe_mem(__DECONST(void *, x), __FILE__, __LINE__)
 
+#ifndef __clang__
 #define __unused       __attribute__((__unused__))
+#endif
 
 #endif

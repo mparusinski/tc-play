@@ -39,7 +39,11 @@
  * for more details...
  */
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#if defined(__APPLE__)
+#include <gcrypt/gcrypt.h>
+#else
 #include <gcrypt.h>
+#endif // __APPLE__
 #pragma GCC diagnostic warning "-Wdeprecated-declarations"
 
 #include "generic_xts.h"
