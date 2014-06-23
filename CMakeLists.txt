@@ -8,7 +8,7 @@ find_package (PkgConfig)
 include (CheckLibraryExists)
 
 set (SRCS_COMMON tcplay.c crc32.c safe_mem.c io.c hdr.c humanize.c crypto.c generic_xts.c)
-set (SRCS_LINUX  crypto-gcrypt.c)
+set (SRCS_LINUX  crypto-gcrypt.c) # Also for OS X
 
 set (CFLAGS_LINUX  "-D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE")
 set (CFLAGS_WARN "-Wsystem-headers -Wall -W -Wno-unused-parameter -Wstrict-prototypes -Wmissing-prototypes -Wpointer-arith -Wold-style-definition -Wreturn-type -Wcast-qual -Wwrite-strings -Wswitch -Wshadow -Wcast-align -Wunused-parameter -Wchar-subscripts	-Winline -Wnested-externs")
@@ -19,7 +19,7 @@ set (CFLAGS_VER    "-DMAJ_VER=${VERSION_MAJOR} -DMIN_VER=${VERSION_MINOR}")
 if (NOT APPLE)
 	set (CFLAGS_COMMON "-std=c99 -fPIE ${CFLAGS_LINUX} ${CFLAGS_WARN} ${CFLAGS_VER}")
 else ()
-	set (CFLAGS_COMMON "-std=c11 -fPIE ${CFLAGS_LINUX} ${CFLAGS_WARN} ${CFLAGS_VER}")
+	set (CFLAGS_COMMON "-std=c11 -fPIE ${CFLAGS_WARN} ${CFLAGS_VER}")
 endif()
 
 if ($ENV{DEBUG})
@@ -96,26 +96,39 @@ endif()
 
 add_executable(tcplay-bin main.c ${SRCS_COMMON} ${SRCS_LINUX} ${SRCS_PBKDF})
 set_target_properties(tcplay-bin PROPERTIES OUTPUT_NAME tcplay)
-set_target_properties(tcplay-bin PROPERTIES COMPILE_FLAGS "${CFLAGS_COMMON} ${DEVMAPPER_CFLAGS} ${UUID_CFLAGS} ${GCRYPT_CFLAGS}")
 if (NOT APPLE)
+	set_target_properties(tcplay-bin PROPERTIES COMPILE_FLAGS "${CFLAGS_COMMON} ${DEVMAPPER_CFLAGS} ${UUID_CFLAGS} ${GCRYPT_CFLAGS}")
 	target_link_libraries(tcplay-bin ${DEVMAPPER_LDFLAGS} ${UUID_LDFLAGS} ${GCRYPT_LDFLAGS} ${LDFLAGS_PBKDF})
 else ()
+	set_target_properties(tcplay-bin PROPERTIES COMPILE_FLAGS "${CFLAGS_COMMON} ${UUID_CFLAGS} ${GCRYPT_CFLAGS}")
 	target_link_libraries(tcplay-bin ${APPLE_FRAMEWORKS} ${LDFLAGS_PBKDF})
 endif()
 
-add_library(tcplay-so SHARED tcplay_api.c ${SRCS_COMMON} ${SRCS_LINUX} ${SRCS_PBKDF})
-set_target_properties(tcplay-so PROPERTIES OUTPUT_NAME tcplay)
-set_target_properties(tcplay-so PROPERTIES SOVERSION ${VERSION_MAJOR}.${VERSION_MINOR})
-set_target_properties(tcplay-so PROPERTIES COMPILE_FLAGS "${CFLAGS_COMMON} ${DEVMAPPER_CFLAGS} ${UUID_CFLAGS} ${GCRYPT_CFLAGS}")
-set_target_properties(tcplay-so PROPERTIES LINK_FLAGS "-Wl,--version-script=${PROJECT_SOURCE_DIR}/tcplay.map")
-# XXX: revist linking libraries against so. Seems to be more common practice nowadays
-target_link_libraries(tcplay-so ${DEVMAPPER_LDFLAGS} ${UUID_LDFLAGS} ${GCRYPT_LDFLAGS} ${LDFLAGS_PBKDF})
-
+if (NOT APPLE)
+	add_library(tcplay-so SHARED tcplay_api.c ${SRCS_COMMON} ${SRCS_LINUX} ${SRCS_PBKDF})
+	set_target_properties(tcplay-so PROPERTIES OUTPUT_NAME tcplay)
+	set_target_properties(tcplay-so PROPERTIES SOVERSION ${VERSION_MAJOR}.${VERSION_MINOR})
+	set_target_properties(tcplay-so PROPERTIES COMPILE_FLAGS "${CFLAGS_COMMON} ${DEVMAPPER_CFLAGS} ${UUID_CFLAGS} ${GCRYPT_CFLAGS}")
+	set_target_properties(tcplay-so PROPERTIES LINK_FLAGS "-Wl,--version-script=${PROJECT_SOURCE_DIR}/tcplay.map")
+	# XXX: revist linking libraries against so. Seems to be more common practice nowadays
+	target_link_libraries(tcplay-so ${DEVMAPPER_LDFLAGS} ${UUID_LDFLAGS} ${GCRYPT_LDFLAGS} ${LDFLAGS_PBKDF})
+else ()
+	add_library(tcplay-dylib SHARED tcplay_api.c ${SRCS_COMMON} ${SRCS_LINUX} ${SRCS_PBKDF})
+	set_target_properties(tcplay-dylib PROPERTIES OUTPUT_NAME tcplay)
+	set_target_properties(tcplay-dylib PROPERTIES SOVERSION ${VERSION_MAJOR}.${VERSION_MINOR})
+	set_target_properties(tcplay-dylib PROPERTIES COMPILE_FLAGS "${CFLAGS_COMMON} ${UUID_CFLAGS} ${GCRYPT_CFLAGS}")
+	# XXX: revist linking libraries against so. Seems to be more common practice nowadays
+	target_link_libraries(tcplay-dylib ${APPLE_FRAMEWORKS} ${LDFLAGS_PBKDF})
+endif()
 
 add_library(tcplay-static STATIC tcplay_api.c ${SRCS_COMMON} ${SRCS_LINUX} ${SRCS_PBKDF})
 set_target_properties(tcplay-static PROPERTIES OUTPUT_NAME tcplay)
 set_target_properties(tcplay-static PROPERTIES VERSION ${VERSION_MAJOR}.${VERSION_MINOR})
-set_target_properties(tcplay-static PROPERTIES COMPILE_FLAGS "${CFLAGS_COMMON} ${DEVMAPPER_CFLAGS} ${UUID_CFLAGS} ${GCRYPT_CFLAGS}")
+if (NOT APPLE)
+	set_target_properties(tcplay-static PROPERTIES COMPILE_FLAGS "${CFLAGS_COMMON} ${DEVMAPPER_CFLAGS} ${UUID_CFLAGS} ${GCRYPT_CFLAGS}")
+else()
+	set_target_properties(tcplay-static PROPERTIES COMPILE_FLAGS "${CFLAGS_COMMON} ${UUID_CFLAGS} ${GCRYPT_CFLAGS}")
+endif()
 
 
 # Generate pkg-config file tcplay.pc
@@ -135,11 +148,15 @@ Cflags: -I\${includedir}
 
 
 # Installation targets
-install(TARGETS tcplay-bin tcplay-static tcplay-so
-	RUNTIME DESTINATION sbin             COMPONENT bin
-	LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT lib
-	ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT lib-dev
-)
+if (NOT APPLE)
+	install(TARGETS tcplay-bin tcplay-static tcplay-so
+		RUNTIME DESTINATION sbin             COMPONENT bin
+		LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT lib
+		ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT lib-dev
+	)
+else ()
+	# SOMETHING FOR OS X
+endif ()
 
 install(FILES ${PROJECT_BINARY_DIR}/tcplay.pc DESTINATION lib${LIB_SUFFIX}/pkgconfig COMPONENT lib-dev)
 

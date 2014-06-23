@@ -297,6 +297,13 @@ get_disk_info(const char *dev, disksz_t *blocks, size_t *bsize)
 	close(fd);
 	return 0;
 }
+#elif defined(__APPLE__)
+int
+get_disk_info(const char *dev, disksz_t *blocks, size_t *bsize)
+{
+    // TODO: Implement this function
+    return 0;
+}
 #endif
 
 int
