@@ -137,14 +137,9 @@ OS X Support
 ---------- 
 
 In this Git repository is currently undergoing work to provide support for
-OS X. At the moment there is a way to generate using cmake an XCode project
-for tc-play however at the moment nothing else compiles. To create an XCode
-project you need to first download the following libraries:
-
-https://www.dropbox.com/sh/5kec2t3hfludsv5/AABQAujKty5SW2CdXnC6OA7Da/gcrypt.framework
-https://www.dropbox.com/sh/5kec2t3hfludsv5/AACi6oaC9NRfBg2V7y8Zhg5wa/gpg-error.framework
-
-add them to /Library/Frameworks and then run cmake.
+OS X. To compile under OS X you need to install gcrypt and gpg-error using
+HomeBrew, Macports or a similar package manager (libraries needs to be 
+installed under /usr/local/lib). Current only CMake is supported on OS X.
 
 Licensing
 ==========
